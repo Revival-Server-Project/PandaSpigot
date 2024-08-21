@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - master
+    tags:
+      - '*'  # Trigger on any tag push
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
   build:
@@ -45,3 +48,12 @@ jobs:
           name: Server JAR
           path: pandaspigot-${{ github.run_number }}.jar
           if-no-files-found: error
+
+      - name: Release JAR
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: pandaspigot-${{ github.run_number }}.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
