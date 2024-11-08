@@ -1,0 +1,121 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: root <root@Mark.localdomain>
+Date: Thu, 7 Nov 2024 17:54:33 -0500
+Subject: [PATCH] Add Mineplex Knockback
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
+index 32752dfad24bc7883b1ab52e29834f1aa6fa60c6..7eb8ca83bbdf22a0958002ccee69c17f4dd4416f 100644
+--- a/src/main/java/net/minecraft/server/EntityLiving.java
++++ b/src/main/java/net/minecraft/server/EntityLiving.java
+@@ -27,6 +27,7 @@ import co.aikar.timings.SpigotTimings; // Spigot
+ 
+ // PaperSpigot start
+ import org.bukkit.Bukkit;
++import org.bukkit.util.Vector;
+ import org.spigotmc.event.entity.EntityDismountEvent;
+ // PaperSpigot end
+ 
+@@ -794,6 +795,7 @@ public abstract class EntityLiving extends Entity {
+                     }
+ 
+                     if (entity != null) {
++                        /*
+                         double d0 = entity.locX - this.locX;
+ 
+                         double d1;
+@@ -803,7 +805,16 @@ public abstract class EntityLiving extends Entity {
+                         }
+ 
+                         this.aw = (float) (MathHelper.b(d1, d0) * 180.0D / 3.1415927410125732D - (double) this.yaw);
+-                        this.a(entity, f, d0, d1);
++                         */
++
++                        double knockbackConst = 0.815;
++                        Vector trajectory = getBukkitEntity().getLocation().toVector().subtract(entity.getBukkitEntity().getLocation().toVector()).setY(0).normalize();
++                        trajectory.multiply(0.6D * knockbackConst);
++                        trajectory.setY(Math.abs(trajectory.getY()));
++                        double vel = 0.2 + trajectory.length() * 0.8;
++                        trajectory = MineplexVelocity.velocity(getBukkitEntity(), trajectory, vel, false, 0, Math.abs(0.2 * knockbackConst), 0.4 + (0.04 * knockbackConst), true);
++
++                        this.a(trajectory.getX(), trajectory.getY(), trajectory.getZ());
+                     } else {
+                         this.aw = (float) ((int) (Math.random() * 2.0D) * 180);
+                     }
+@@ -894,28 +905,33 @@ public abstract class EntityLiving extends Entity {
+ 
+     protected void dropEquipment(boolean flag, int i) {}
+ 
+-    public void a(Entity entity, float f, double d0, double d1) {
++    public void a(double x, double y, double z) {
++        /*
+         if (this.random.nextDouble() >= this.getAttributeInstance(GenericAttributes.c).getValue()) {
+             this.ai = true;
+             // PandaSpigot start - Configurable knockback
+             com.hpfxd.pandaspigot.config.PandaSpigotWorldConfig.KnockbackConfig knockbackConfig = entity.world.pandaSpigotConfig.knockback;
+             double magnitude = MathHelper.sqrt(d0 * d0 + d1 * d1);
+-    
++
+             double friction = knockbackConfig.friction;
+             this.motX /= friction;
+             this.motY /= friction;
+             this.motZ /= friction;
+-    
++
+             this.motX -= d0 / magnitude * knockbackConfig.horizontal;
+             this.motY += knockbackConfig.vertical;
+             this.motZ -= d1 / magnitude * knockbackConfig.horizontal;
+-    
++
+             if (this.motY > knockbackConfig.verticalLimit) {
+                 this.motY = knockbackConfig.verticalLimit;
+             }
+             // PandaSpigot end
+ 
+         }
++         */
++        this.motX = x;
++        this.motY = y;
++        this.motZ = z;
+     }
+ 
+     protected String bo() {
+diff --git a/src/main/java/net/minecraft/server/MineplexVelocity.java b/src/main/java/net/minecraft/server/MineplexVelocity.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..3e6ebe24bd042e91af3ae756957c3d36c14cce63
+--- /dev/null
++++ b/src/main/java/net/minecraft/server/MineplexVelocity.java
+@@ -0,0 +1,33 @@
++package net.minecraft.server;
++
++import org.bukkit.entity.Entity;
++import org.bukkit.util.Vector;
++
++public class MineplexVelocity {
++
++    public static Vector velocity(Entity ent, Vector vec, double str, boolean ySet, double yBase, double yAdd, double yMax, boolean groundBoost) {
++
++        //YSet
++        if (ySet)
++            vec.setY(yBase);
++
++        //Modify
++        vec.normalize();
++        vec.multiply(str);
++
++        //YAdd
++        vec.setY(vec.getY() + yAdd);
++
++        //Limit
++        if (vec.getY() > yMax)
++            vec.setY(yMax);
++
++        if (groundBoost)
++            if (ent.isOnGround())
++                vec.setY(vec.getY() + 0.2);
++
++        //Velocity
++        return vec;
++    }
++
++}

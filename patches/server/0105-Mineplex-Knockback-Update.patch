@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: root <root@Mark.localdomain>
+Date: Thu, 7 Nov 2024 20:45:46 -0500
+Subject: [PATCH] Mineplex Knockback Update
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
+index 7eb8ca83bbdf22a0958002ccee69c17f4dd4416f..ff98f045c65e735eb6e3e822a9b79da93416bab5 100644
+--- a/src/main/java/net/minecraft/server/EntityLiving.java
++++ b/src/main/java/net/minecraft/server/EntityLiving.java
+@@ -812,7 +812,7 @@ public abstract class EntityLiving extends Entity {
+                         trajectory.multiply(0.6D * knockbackConst);
+                         trajectory.setY(Math.abs(trajectory.getY()));
+                         double vel = 0.2 + trajectory.length() * 0.8;
+-                        trajectory = MineplexVelocity.velocity(getBukkitEntity(), trajectory, vel, false, 0, Math.abs(0.2 * knockbackConst), 0.4 + (0.04 * knockbackConst), true);
++                        trajectory = MineplexVelocity.velocity(getBukkitEntity(), trajectory, vel, false, 0, Math.abs(0.2 * knockbackConst), 0.2 + (0.04 * knockbackConst), true);
+ 
+                         this.a(trajectory.getX(), trajectory.getY(), trajectory.getZ());
+                     } else {
